@@ -1,2 +1,2 @@
-# az_backtest
+# Backtest
 The library for backtesting
