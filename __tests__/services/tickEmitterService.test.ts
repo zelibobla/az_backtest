@@ -6,10 +6,7 @@ describe('streamTicksFromFile', () => {
       let ticks = [];
       const observable = streamTicksFromFile('./assets/DJ.csv');
       observable.subscribe(
-        t => {
-          console.log('>>>', t);
-          ticks = [...ticks, ...t];
-        },
+        t => ticks = [...ticks, ...t],
         () => resolve(ticks),
       );
     }).then((result) => {

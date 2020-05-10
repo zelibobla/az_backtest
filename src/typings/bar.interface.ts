@@ -1,4 +1,4 @@
-export default interface CandleInterface {
+export default interface BarInterface {
   timestamp: number;
   open: number;
   high: number;
