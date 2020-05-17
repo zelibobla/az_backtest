@@ -1,5 +1,6 @@
 import { program } from 'commander';
-import { streamTicksFromFile } from './services/tickEmitterService'; 
+import { streamDataFromFile } from './services/fileService';
+import { /* parseTickLine ,*/ parseBarLine } from './parsers/csvParser';
 
 program
   .option('-i, --history <path>', 'path to history ticks data file')
@@ -7,9 +8,12 @@ program
 program.parse(process.argv);
 
 if (!program.history) {
-  console.log('The history ticks data file must be specified. Type -h for help.');
+  console.log(
+    'The history ticks data file must be specified. Type -h for help.',
+  );
 } else {
   const { history } = program.opts();
-  const observable = streamTicksFromFile(history);
+  //const observable = streamDataFromFile(history, parseTickLine);
+  const observable = streamDataFromFile(history, parseBarLine);
   observable.subscribe(console.log);
 }

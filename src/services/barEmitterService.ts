@@ -1,5 +1,6 @@
 import { Observable, Observer } from 'rxjs';
 
+import { streamDataFromFile } from './fileService';
 import BarInterface from '../typings/bar.interface';
 import { GranularitySeconds } from '../typings/granularity.enum';
 import TickInterface from '../typings/tick.interface';
@@ -7,15 +8,18 @@ import TickInterface from '../typings/tick.interface';
 let ticksCollection = <TickInterface[]>[];
 let currentBar: BarInterface;
 
-const createBar = (tick: TickInterface, granularity: GranularitySeconds): BarInterface => {
+const createBar = (
+  tick: TickInterface,
+  granularity: GranularitySeconds,
+): BarInterface => {
   return {
-    timestamp: tick.timestamp - tick.timestamp % (granularity * 1000),
+    timestamp: tick.timestamp - (tick.timestamp % (granularity * 1000)),
     open: tick.price,
     high: tick.price,
     low: tick.price,
     close: tick.price,
   } as BarInterface;
-}
+};
 
 const createFakeBars = (
   currentBar: BarInterface,
@@ -27,12 +31,12 @@ const createFakeBars = (
     timestamp: currentBar.timestamp + granularity * 1000,
     price: currentBar.close,
   };
-  while(fakeTick.timestamp + granularity * 1000 < timestamp) {
+  while (fakeTick.timestamp + granularity * 1000 < timestamp) {
     bars.push(createBar(fakeTick, granularity));
     fakeTick.timestamp += granularity * 1000;
   }
   return bars;
-}
+};
 
 const emitBar = (
   observer: Observer<BarInterface>,
@@ -44,21 +48,24 @@ const emitBar = (
   ticksCollection.forEach(tick => {
     const duration = Math.floor(tick.timestamp - currentBar.timestamp) / 1000;
     if (duration > granularity) {
-      observer.next({...currentBar});
-      createFakeBars(currentBar, tick.timestamp, granularity).forEach(bar => observer.next({...bar}));
+      observer.next({ ...currentBar });
+      createFakeBars(currentBar, tick.timestamp, granularity).forEach(bar =>
+        observer.next({ ...bar }),
+      );
       currentBar = createBar(tick, granularity);
     }
-    currentBar.high = tick.price > currentBar.high ? tick.price : currentBar.high;
+    currentBar.high =
+      tick.price > currentBar.high ? tick.price : currentBar.high;
     currentBar.low = tick.price < currentBar.low ? tick.price : currentBar.low;
     currentBar.close = tick.price;
   });
-}
+};
 
 const streamBarsFromTicks = (
   ticksEmitter: Observable<TickInterface[]>,
   granularity: GranularitySeconds,
 ): Observable<BarInterface> => {
-  const observable = Observable.create((observer) => {
+  const observable = Observable.create(observer => {
     ticksEmitter.subscribe(
       ticks => {
         ticksCollection = [...ticksCollection, ...ticks];
@@ -71,4 +78,7 @@ const streamBarsFromTicks = (
   return observable;
 };
 
-export { streamBarsFromTicks };
+const streamBarsFromFile = (file: string, parseLine: Function) =>
+  streamDataFromFile(file, parseLine);
+
+export { streamBarsFromTicks, streamBarsFromFile };

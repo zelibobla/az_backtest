@@ -4,5 +4,5 @@ export default interface BarInterface {
   high: number;
   low: number;
   close: number;
-  value: number;
+  value?: number;
 }
