@@ -1,6 +1,10 @@
 import { program } from 'commander';
-import { streamDataFromFile } from './services/fileService';
+
+import { streamBarsFromFile } from './services/barEmitterService';
 import { /* parseTickLine ,*/ parseBarLine } from './parsers/csvParser';
+import { HMA } from './indicators/hmaIndicator';
+import { ATR } from './indicators/atrIndicator';
+import { indicatorPipe } from './pipes/indicatorPipe';
 
 program
   .option('-i, --history <path>', 'path to history ticks data file')
@@ -14,6 +18,12 @@ if (!program.history) {
 } else {
   const { history } = program.opts();
   //const observable = streamDataFromFile(history, parseTickLine);
-  const observable = streamDataFromFile(history, parseBarLine);
-  observable.subscribe(console.log);
+  const observable = streamBarsFromFile(history, parseBarLine).pipe(
+    indicatorPipe(HMA, { key: 'HMA50', period: 50 }),
+    indicatorPipe(ATR, { key: 'ATR50', period: 50 }),
+  );
+
+  observable.subscribe(bar => {
+    console.log('>>>', bar);
+  });
 }

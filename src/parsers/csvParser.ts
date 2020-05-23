@@ -15,7 +15,14 @@ const parseBarLine = (line: string): BarInterface => {
   const high = +parts[2];
   const low = +parts[3];
   const close = +parts[4];
-  return { open, high, low, close, timestamp: time.valueOf() };
+  return {
+    open,
+    high,
+    low,
+    close,
+    original_date: parts[0],
+    timestamp: time.valueOf(),
+  };
 };
 
 export { parseTickLine, parseBarLine };

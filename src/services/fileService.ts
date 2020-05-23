@@ -7,8 +7,8 @@ const readFileInStream = (path: string): ReadStream => {
   return createReadStream(fullFilename, 'utf-8');
 };
 
-const streamData = (stream: ReadStream, parseLine: Function) =>
-  Observable.create(observer => {
+const streamData = (stream: ReadStream, parseLine: Function) => {
+  return Observable.create(observer => {
     stream.on('end', () => observer.complete());
     stream.on('close', () => observer.complete());
     stream.on('error', e => observer.error(e));
@@ -23,6 +23,7 @@ const streamData = (stream: ReadStream, parseLine: Function) =>
 
     return observer.pause;
   });
+};
 
 const streamDataFromFile = (
   path: string,

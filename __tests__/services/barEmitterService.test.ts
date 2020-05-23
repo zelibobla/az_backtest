@@ -29,23 +29,24 @@ describe('Bars streaming service', () => {
     ticksObserver.next(ticks);
   });
 
-  it('Reads the file and merges chunks', done =>
-    new Promise(resolve => {
-      let ticks = [];
-      const observable = streamBarsFromFile(
-        './assets/SPX_bars.csv',
-        parseBarLine,
-      );
-      observable.subscribe(
-        t => (ticks = [...ticks, ...t]),
-        () => resolve(ticks),
-      );
-    }).then(result => {
-      const bars = result as Array<any>;
-      const brokenBar = bars.find(
-        b => !b.timestamp || !b.open || !b.high || !b.low || !b.close,
-      );
-      expect(brokenBar).toBeUndefined();
-      done();
-    }));
+  it('Reads the file and merges chunks', done => {
+    let bars = [];
+    const observable = streamBarsFromFile(
+      './__tests__/assets/SPX_bars.csv',
+      parseBarLine,
+    );
+    observable.subscribe(
+      bar => {
+        bars.push(bar);
+      },
+      e => done(e),
+      () => {
+        const brokenBar = bars.find(
+          b => !b.timestamp || !b.open || !b.high || !b.low || !b.close,
+        );
+        expect(brokenBar).toBeUndefined();
+        done();
+      },
+    );
+  });
 });

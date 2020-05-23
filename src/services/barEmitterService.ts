@@ -38,7 +38,7 @@ const createFakeBars = (
   return bars;
 };
 
-const emitBar = (
+const emitBarByTicks = (
   observer: Observer<BarInterface>,
   granularity: GranularitySeconds,
 ): void => {
@@ -69,7 +69,7 @@ const streamBarsFromTicks = (
     ticksEmitter.subscribe(
       ticks => {
         ticksCollection = [...ticksCollection, ...ticks];
-        emitBar(observer as Observer<BarInterface>, granularity);
+        emitBarByTicks(observer as Observer<BarInterface>, granularity);
       },
       observer.error,
       observer.complete,
@@ -78,7 +78,18 @@ const streamBarsFromTicks = (
   return observable;
 };
 
-const streamBarsFromFile = (file: string, parseLine: Function) =>
-  streamDataFromFile(file, parseLine);
+const streamBarsFromFile = (
+  file: string,
+  parseLine: Function,
+): Observable<BarInterface> => {
+  const observable = Observable.create(observer => {
+    streamDataFromFile(file, parseLine).subscribe(
+      bars => bars.forEach(bar => observer.next(bar)),
+      observer.error,
+      () => observer.complete(),
+    );
+  });
+  return observable;
+};
 
 export { streamBarsFromTicks, streamBarsFromFile };

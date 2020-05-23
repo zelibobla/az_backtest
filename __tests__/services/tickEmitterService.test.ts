@@ -3,14 +3,15 @@ import { parseTickLine } from '../../src/parsers/csvParser';
 
 describe('streamTicksFromFile', () => {
   it('Reads the file and merges chunks', done =>
-    new Promise(resolve => {
+    new Promise((resolve, reject) => {
       let ticks = [];
       const observable = streamTicksFromFile(
-        './assets/DJ_ticks.csv',
+        './__tests__/assets/DJ_ticks.csv',
         parseTickLine,
       );
       observable.subscribe(
         t => (ticks = [...ticks, ...t]),
+        e => reject(e),
         () => resolve(ticks),
       );
     }).then(result => {

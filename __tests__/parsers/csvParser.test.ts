@@ -12,6 +12,7 @@ describe('csvParser', () => {
     );
     expect(bar).toEqual({
       timestamp: 1078392960000,
+      original_date: '2004-03-04 09:36:00',
       open: 1151.54,
       high: 1151.71,
       low: 1151.54,
