@@ -1,3 +1,8 @@
+export interface IndicatorSettingsInterface {
+  indicator: IndicatorInterface;
+  options: IndicatorParamsInterface;
+}
+
 export interface IndicatorInterface {
   calc: Function;
 }

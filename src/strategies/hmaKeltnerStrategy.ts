@@ -5,6 +5,7 @@ import {
   OrderDirectionEnum,
   OrderTypeEnum,
 } from '../typings/order.interface';
+import { DecisionInterface } from '../typings/decision.interface';
 import {
   StrategyInterface,
   StrategyState,
@@ -21,12 +22,12 @@ const defaults = {
   swingTradesDirection: true,
 };
 
-const generateSellOrder = (
+const decideBuy = (
   lastOrder: OrderInterface,
   options: any,
   bar: BarInterface,
   instrument: InstrumentInterface,
-) => {
+): DecisionInterface => {
   const HMA50 = bar.indicators.get('HMA50');
   const ATR50 = bar.indicators.get('ATR50');
   const bottom = HMA50 - ATR50 * options.boundsWidthATR;
@@ -50,17 +51,17 @@ const generateSellOrder = (
       type: OrderTypeEnum.MKT,
       stopLoss,
       takeProfit,
-    } as OrderInterface;
+    } as DecisionInterface;
   }
   return null;
 };
 
-const generateBuyOrder = (
+const decideSell = (
   lastOrder: OrderInterface,
   options: any,
   bar: BarInterface,
   instrument: InstrumentInterface,
-) => {
+): DecisionInterface => {
   const HMA50 = bar.indicators.get('HMA50');
   const ATR50 = bar.indicators.get('ATR50');
   const top = HMA50 + ATR50 * options.boundsWidthATR;
@@ -84,7 +85,7 @@ const generateBuyOrder = (
       type: OrderTypeEnum.MKT,
       stopLoss,
       takeProfit,
-    } as OrderInterface;
+    } as DecisionInterface;
   }
   return null;
 };
@@ -114,13 +115,13 @@ const HMAKeltnerStrategy = {
       }
 
       const [lastOrder] = state.orders.slice(-1);
-      const order =
-        generateSellOrder(lastOrder, options, bar, instrument) ||
-        generateBuyOrder(lastOrder, options, bar, instrument);
+      const decision =
+        decideSell(lastOrder, options, bar, instrument) ||
+        decideBuy(lastOrder, options, bar, instrument);
 
-      if (order) {
-        decisions.push(order);
-        state.orders.push(order);
+      if (decision) {
+        decisions.push(decision);
+        state.orders.push(decision);
       }
       resolve({ state, decisions } as StrategyOutputInterface);
     }),

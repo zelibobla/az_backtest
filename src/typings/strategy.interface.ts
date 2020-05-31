@@ -1,6 +1,7 @@
 import BarInterface from './bar.interface';
 import { InstrumentInterface } from './instument.interface';
 import { OrderInterface } from './order.interface';
+import { DecisionInterface } from './decision.interface';
 
 export interface StrategyState {
   orders: OrderInterface[];
@@ -8,7 +9,7 @@ export interface StrategyState {
 
 export interface StrategyOutputInterface {
   state: StrategyState;
-  decisions: [];
+  decisions: DecisionInterface[];
 }
 
 export interface StrategyInterface {
@@ -21,8 +22,4 @@ export interface StrategyInterface {
     state: StrategyState,
     bar: BarInterface,
   ): Promise<StrategyOutputInterface>;
-}
-
-export interface DecisionInterface {
-  order?: string;
 }
