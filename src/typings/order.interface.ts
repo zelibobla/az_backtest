@@ -8,8 +8,10 @@ export enum OrderTypeEnum {
 }
 
 export interface OrderInterface {
+  hash: string;
   direction: OrderDirectionEnum;
   type: OrderTypeEnum;
+  price: number;
   stopLoss?: number;
   takeProfit?: number;
 }

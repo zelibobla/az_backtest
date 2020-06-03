@@ -1,25 +1,19 @@
 import BarInterface from './bar.interface';
 import { InstrumentInterface } from './instument.interface';
 import { OrderInterface } from './order.interface';
-import { DecisionInterface } from './decision.interface';
 
-export interface StrategyState {
+export interface StrategyStateInterface {
   orders: OrderInterface[];
-}
-
-export interface StrategyOutputInterface {
-  state: StrategyState;
-  decisions: DecisionInterface[];
 }
 
 export interface StrategyInterface {
   key: string;
   defaults: any;
-  defaultState: any;
+  defaultState: StrategyStateInterface;
   digest(
+    state: StrategyStateInterface,
     instrument: InstrumentInterface,
-    options: any,
-    state: StrategyState,
     bar: BarInterface,
-  ): Promise<StrategyOutputInterface>;
+    options: any,
+  ): Promise<StrategyStateInterface>;
 }
