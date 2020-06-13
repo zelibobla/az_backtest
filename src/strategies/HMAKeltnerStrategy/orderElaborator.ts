@@ -1,4 +1,3 @@
-import { Md5 } from 'ts-md5/dist/md5';
 import BarInterface from '../../typings/bar.interface';
 import { InstrumentInterface } from '../../typings/instument.interface';
 import {
@@ -6,6 +5,7 @@ import {
   OrderDirectionEnum,
   OrderTypeEnum,
 } from '../../typings/order.interface';
+import { orderFactory } from '../../factories/orderFactory';
 
 const decideBuy = (
   bar: BarInterface,
@@ -31,16 +31,13 @@ const decideBuy = (
     const stopLoss = bar.close - (ATR50 * options.stopLossATR) / instrument.pip;
     const takeProfit =
       bar.close + (ATR50 * options.takeProfitATR) / instrument.pip;
-    const order = {
-      direction: OrderDirectionEnum.BUY,
-      type: OrderTypeEnum.MKT,
+    return orderFactory.create(
+      OrderDirectionEnum.BUY,
+      OrderTypeEnum.MKT,
+      bar.close,
       stopLoss,
       takeProfit,
-    } as OrderInterface;
-    order.hash = Md5.hashStr(
-      JSON.stringify(bar) + JSON.stringify(order),
-    ) as string;
-    return order;
+    );
   }
   return null;
 };
@@ -69,16 +66,13 @@ const decideSell = (
     const stopLoss = bar.close + (ATR50 * options.stopLossATR) / instrument.pip;
     const takeProfit =
       bar.close - (ATR50 * options.takeProfitATR) / instrument.pip;
-    const order = {
-      direction: OrderDirectionEnum.SELL,
-      type: OrderTypeEnum.MKT,
+    return orderFactory.create(
+      OrderDirectionEnum.SELL,
+      OrderTypeEnum.MKT,
+      bar.close,
       stopLoss,
       takeProfit,
-    } as OrderInterface;
-    order.hash = Md5.hashStr(
-      JSON.stringify(bar) + JSON.stringify(order),
-    ) as string;
-    return order;
+    );
   }
   return null;
 };

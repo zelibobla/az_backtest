@@ -5,10 +5,9 @@ import { share } from 'rxjs/operators';
 import { ATR } from './indicators/atrIndicator';
 import { backtestBroker } from './brokers/backtestBroker';
 import { brokerPipe } from './pipes/brokerPipe';
-import { dealerPipe } from './pipes/dealerPipe';
 import { errors, hints } from './constants/messages';
 import { HMA } from './indicators/hmaIndicator';
-import { HMAKeltnerStrategy } from './strategies/HMAKeltnerStrategy';
+import { HMAKeltnerStrategy } from './strategies/HMAKeltnerStrategy/HMAKeltnerStrategy';
 import { indicatorsPipe } from './pipes/indicatorsPipe';
 import { InstrumentInterface } from './typings/instument.interface';
 import { /* parseTickLine ,*/ parseBarLine } from './parsers/csvParser';
@@ -39,13 +38,19 @@ const dealsObservable = barsObservable.pipe(
     { indicator: ATR, options: { key: 'ATR50', period: 50 } },
   ]),
   strategyPipe(store, instrument, HMAKeltnerStrategy),
-  dealerPipe(store, backtestBroker),
+  brokerPipe(store, backtestBroker),
 );
-const brokerObservable = barsObservable.pipe(brokerPipe(store, backtestBroker));
-const observable = merge(dealsObservable, brokerObservable);
+
+const observable = merge(dealsObservable);
 
 let barNum = 0;
-observable.subscribe(obj => {
-  barNum += 1;
-  console.log(barNum, obj);
-});
+observable.subscribe(
+  obj => {
+    barNum += 1;
+    console.log(barNum, +obj);
+  },
+  undefined,
+  () => {
+    console.log(store.getStrategyState(HMAKeltnerStrategy.key));
+  },
+);

@@ -7,9 +7,7 @@ import { StoreInterface } from '../typings/store.interface';
 
 const brokerPipe = (store: StoreInterface, broker: BrokerInterface) =>
   concatMap(
-    (bar: BarInterface): Observable<void> => {
-      return from(broker.watch(store, bar));
-    },
+    (bar: BarInterface): Observable<void> => from(broker.watch(store, bar)),
   );
 
 export { brokerPipe };

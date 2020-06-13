@@ -13,22 +13,21 @@ const indicatorsPipe = (indicators: IndicatorSettingsInterface[]) =>
         .map(i => i.options.period)
         .sort()
         .pop();
-      if (tail.length > longestPeriod * 2) {
+      if (tail.length >= longestPeriod * 2) {
         tail.shift();
       }
+      tail.push(bar);
       if (!bar.indicators) {
         bar.indicators = new Map();
       }
-      tail.push(bar);
       return from(
         Promise.all(
           indicators.map((settings: IndicatorSettingsInterface) => {
             return settings.indicator
               .calc(tail, settings.options.period)
-              .then(results => {
-                bar.indicators.set(settings.options.key, results.pop());
-                return bar;
-              });
+              .then(results =>
+                bar.indicators.set(settings.options.key, results.pop()),
+              );
           }),
         ).then(() => {
           return bar;

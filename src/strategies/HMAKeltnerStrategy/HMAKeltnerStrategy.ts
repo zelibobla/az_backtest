@@ -32,7 +32,7 @@ const HMAKeltnerStrategy = {
         return resolve(state);
       }
       const [lastOrder] = state.orders.slice(-1);
-      const order = elaborateOrder(lastOrder, options, bar, instrument);
+      const order = elaborateOrder(bar, instrument, options, lastOrder);
 
       if (order) {
         state.orders.push(order);
