@@ -1,9 +1,12 @@
 import BarInterface from './bar.interface';
 import { InstrumentInterface } from './instument.interface';
 import { OrderInterface } from './order.interface';
+import { TradeInterface } from './trade.interface';
 
 export interface StrategyStateInterface {
-  orders: OrderInterface[];
+  positions: Map<string, number>;
+  orders: Map<string, OrderInterface>;
+  trades: TradeInterface[];
 }
 
 export interface StrategyInterface {

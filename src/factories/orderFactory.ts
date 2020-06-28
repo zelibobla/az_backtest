@@ -5,72 +5,81 @@ import {
   OrderTypeEnum,
   OrderStatusEnum,
 } from '../typings/order.interface';
+import { TradeInterface } from '../typings/trade.interface';
 
 const orderFactory = {
   create: (
     direction: OrderDirectionEnum,
     type: OrderTypeEnum,
     price: number,
-    stopLoss?: number,
-    takeProfit?: number,
-    parent?: string,
+    symbol: string,
+    quantity: number,
+    parentHash?: string,
+    tradeHash?: string,
   ): OrderInterface => {
     const order = {
       direction,
       type,
       status: OrderStatusEnum.NEW,
     } as OrderInterface;
-    if (stopLoss !== undefined) {
-      order.stopLoss = stopLoss;
-    }
-    if (takeProfit !== undefined) {
-      order.takeProfit = takeProfit;
-    }
-    if (parent) {
-      order.parent = parent;
-    }
     order.initialPrice = price;
+    order.symbol = symbol;
+    order.quantity = quantity;
+    order.parentHash = parentHash;
     order.hash = Md5.hashStr(
       JSON.stringify(new Date().toString()) + JSON.stringify(order),
     ) as string;
+    order.tradeHash = tradeHash;
     return order;
   },
 
-  createChildren: (order: OrderInterface): OrderInterface[] => {
+  createChildren: (
+    trade: TradeInterface,
+    parent: OrderInterface,
+  ): OrderInterface[] => {
+    if (parent.parentHash) {
+      return [];
+    }
     const children = [];
-    if (order.stopLoss) {
+    if (trade.stopLoss) {
       const direction =
-        order.direction === OrderDirectionEnum.BUY
+        parent.direction === OrderDirectionEnum.BUY
           ? OrderDirectionEnum.SELL
           : OrderDirectionEnum.BUY;
       const stopLoss = orderFactory.create(
         direction,
         OrderTypeEnum.STP,
-        order.stopLoss,
+        trade.stopLoss,
+        trade.symbol,
+        trade.openOrder.quantity,
+        parent.hash,
+        trade.hash,
       );
-      stopLoss.parent = order.hash;
       children.push(stopLoss);
-      if (!order.children) {
-        order.children = [];
+      if (!parent.children) {
+        parent.children = [];
       }
-      order.children.push(stopLoss.hash);
+      parent.children.push(stopLoss.hash);
     }
-    if (order.takeProfit) {
+    if (trade.takeProfit) {
       const direction =
-        order.direction === OrderDirectionEnum.BUY
+        parent.direction === OrderDirectionEnum.BUY
           ? OrderDirectionEnum.SELL
           : OrderDirectionEnum.BUY;
       const takeProfit = orderFactory.create(
         direction,
         OrderTypeEnum.LMT,
-        order.takeProfit,
+        trade.takeProfit,
+        trade.symbol,
+        trade.openOrder.quantity,
+        parent.hash,
+        trade.hash,
       );
-      takeProfit.parent = order.hash;
       children.push(takeProfit);
-      if (!order.children) {
-        order.children = [];
+      if (!parent.children) {
+        parent.children = [];
       }
-      order.children.push(takeProfit.hash);
+      parent.children.push(takeProfit.hash);
     }
     return children;
   },

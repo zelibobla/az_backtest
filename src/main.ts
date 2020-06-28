@@ -51,6 +51,8 @@ observable.subscribe(
   },
   undefined,
   () => {
-    console.log(store.getStrategyState(HMAKeltnerStrategy.key));
+    store.getStrategyState(HMAKeltnerStrategy.key).trades.forEach(trade => {
+      console.log(trade);
+    });
   },
 );

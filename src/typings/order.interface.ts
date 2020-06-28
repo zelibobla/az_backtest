@@ -1,3 +1,5 @@
+import BarInterface from './bar.interface';
+
 export enum OrderDirectionEnum {
   BUY = 'BUY',
   SELL = 'SELL',
@@ -17,14 +19,16 @@ export enum OrderStatusEnum {
 }
 
 export interface OrderInterface {
-  parent: string;
+  tradeHash: string;
+  parentHash: string;
   children: string[];
   hash: string;
+  symbol: string;
+  quantity: number;
   direction: OrderDirectionEnum;
   type: OrderTypeEnum;
   initialPrice: number;
   filledPrice?: number;
+  bar?: BarInterface;
   status: OrderStatusEnum;
-  stopLoss?: number;
-  takeProfit?: number;
 }

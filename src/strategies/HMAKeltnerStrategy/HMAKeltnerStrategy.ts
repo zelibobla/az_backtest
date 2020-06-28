@@ -4,13 +4,15 @@ import {
   StrategyInterface,
   StrategyStateInterface,
 } from '../../typings/strategy.interface';
-import { elaborateOrder } from './orderElaborator';
+import { elaborateTrade } from './tradeElaborator';
 import { defaults, messages } from './settings';
+import { TradeStatusEnum } from '../../typings/trade.interface';
+import { OrderDirectionEnum } from '../../typings/order.interface';
 
 const HMAKeltnerStrategy = {
   key: 'hmaKeltner',
   defaults,
-  defaultState: { orders: [] },
+  defaultState: { positions: new Map(), orders: new Map(), trades: [] },
   digest: (
     state: StrategyStateInterface,
     instrument: InstrumentInterface,
@@ -31,11 +33,34 @@ const HMAKeltnerStrategy = {
         );
         return resolve(state);
       }
-      const [lastOrder] = state.orders.slice(-1);
-      const order = elaborateOrder(bar, instrument, options, lastOrder);
+      const trade = elaborateTrade(bar, instrument, options);
+      const [lastTrade] = state.trades
+        .filter(t =>
+          [TradeStatusEnum.ACTIVE, TradeStatusEnum.CLOSED].includes(t.status),
+        )
+        .slice(-1);
 
-      if (order) {
-        state.orders.push(order);
+      if (
+        trade &&
+        (lastTrade == undefined ||
+          !options.swingTradesDirection ||
+          (trade.openOrder.direction === OrderDirectionEnum.BUY &&
+            options.swingTradesDirection &&
+            lastTrade.openOrder.direction === OrderDirectionEnum.SELL) ||
+          (trade.openOrder.direction === OrderDirectionEnum.SELL &&
+            options.swingTradesDirection &&
+            lastTrade.openOrder.direction === OrderDirectionEnum.BUY))
+      ) {
+        /**
+         * I use it to switch the direction, and it should stay here
+         * But also the trade.interface must appear here and a trade to be closed in this place
+         */
+        if (Math.abs(state.positions.get(instrument.symbol)) > 0) {
+          trade.openOrder.quantity *= 2;
+        }
+        /* As well as the new trade appear here: */
+        state.orders.set(trade.openOrder.hash, trade.openOrder);
+        state.trades.push(trade);
       }
       resolve(state);
     }),

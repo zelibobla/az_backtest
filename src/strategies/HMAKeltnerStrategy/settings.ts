@@ -8,6 +8,7 @@ const defaults = {
   takeProfitATR: 4,
   stopLossATR: 4,
   swingTradesDirection: true,
+  newTradeOverrideCurrent: true,
 };
 
 const messages = {

@@ -7,29 +7,30 @@ import {
   OrderDirectionEnum,
   OrderInterface,
 } from '../typings/order.interface';
-import { switchStatus } from '../services/orderStateMachine';
+import { switchOrderStatus } from '../services/strategyStateMachine';
 import { StrategyStateInterface } from '../typings/strategy.interface';
 
+//const k = 1;
 const watchOrders = (
   bar: BarInterface,
   orders: OrderInterface[],
   state: StrategyStateInterface,
-) => {
+): void => {
   orders.forEach(order => {
     if (
       order.type === OrderTypeEnum.MKT ||
-      (OrderTypeEnum.LMT &&
-        order.direction === OrderDirectionEnum.SELL &&
-        bar.close >= order.initialPrice) ||
-      (order.direction === OrderDirectionEnum.BUY &&
-        bar.close <= order.initialPrice) ||
-      (OrderTypeEnum.STP &&
-        order.direction === OrderDirectionEnum.SELL &&
-        bar.close <= order.initialPrice) ||
-      (order.direction === OrderDirectionEnum.BUY &&
-        bar.close >= order.initialPrice)
+      (order.type === OrderTypeEnum.LMT &&
+        ((order.direction === OrderDirectionEnum.SELL &&
+          bar.close >= order.initialPrice) ||
+          (order.direction === OrderDirectionEnum.BUY &&
+            bar.close <= order.initialPrice))) ||
+      (order.type === OrderTypeEnum.STP &&
+        ((order.direction === OrderDirectionEnum.SELL &&
+          bar.close <= order.initialPrice) ||
+          (order.direction === OrderDirectionEnum.BUY &&
+            bar.close >= order.initialPrice)))
     ) {
-      switchStatus(order, OrderStatusEnum.FILLED, state);
+      switchOrderStatus(order, OrderStatusEnum.FILLED, bar, state);
     }
   });
 };
@@ -37,22 +38,22 @@ const watchOrders = (
 const backtestBroker = {
   watch: async (store: StoreInterface, bar: BarInterface): Promise<void> => {
     for (const strategyRecord of store) {
-      const ordersGrouped = strategyRecord.state.orders.reduce(
-        (memo, order) => {
-          if (
-            [OrderStatusEnum.NEW, OrderStatusEnum.PENDING].indexOf(
-              order.status,
-            ) === -1
-          ) {
-            return memo;
-          }
-          memo[order.status].push(order);
-          return memo;
-        },
-        { [OrderStatusEnum.NEW]: [], [OrderStatusEnum.PENDING]: [] },
-      );
+      const ordersGrouped = {
+        [OrderStatusEnum.NEW]: [],
+        [OrderStatusEnum.PENDING]: [],
+        [OrderStatusEnum.FILLED]: [],
+        [OrderStatusEnum.CANCELED]: [],
+      };
+      for (const [, o] of strategyRecord.state.orders) {
+        ordersGrouped[o.status].push(o);
+      }
       ordersGrouped[OrderStatusEnum.NEW].forEach(o =>
-        switchStatus(o, OrderStatusEnum.PENDING, strategyRecord.state),
+        switchOrderStatus(
+          o,
+          OrderStatusEnum.PENDING,
+          bar,
+          strategyRecord.state,
+        ),
       );
       watchOrders(
         bar,
@@ -60,18 +61,14 @@ const backtestBroker = {
         strategyRecord.state,
       );
       console.log(
-        'Filled orders:',
-        strategyRecord.state.orders.filter(
-          o => o.status === OrderStatusEnum.FILLED,
-        ).length,
+        'New orders:',
+        ordersGrouped[OrderStatusEnum.NEW].length,
         'Pending orders:',
-        strategyRecord.state.orders.filter(
-          o => o.status === OrderStatusEnum.PENDING,
-        ).length,
+        ordersGrouped[OrderStatusEnum.PENDING].length,
+        'Filled orders:',
+        ordersGrouped[OrderStatusEnum.FILLED].length,
         'Canceled orders:',
-        strategyRecord.state.orders.filter(
-          o => o.status === OrderStatusEnum.CANCELED,
-        ).length,
+        ordersGrouped[OrderStatusEnum.CANCELED].length,
       );
     }
   },
