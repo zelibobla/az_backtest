@@ -7,7 +7,7 @@ import {
   OrderDirectionEnum,
   OrderInterface,
 } from '../typings/order.interface';
-import { switchOrderStatus } from '../services/strategyStateMachine';
+import { triggerChange } from '../services/tradeStateMachine';
 import { StrategyStateInterface } from '../typings/strategy.interface';
 
 //const k = 1;
@@ -30,7 +30,7 @@ const watchOrders = (
           (order.direction === OrderDirectionEnum.BUY &&
             bar.close >= order.initialPrice)))
     ) {
-      switchOrderStatus(order, OrderStatusEnum.FILLED, bar, state);
+      triggerChange(order, OrderStatusEnum.FILLED, bar, state);
     }
   });
 };
@@ -48,12 +48,7 @@ const backtestBroker = {
         ordersGrouped[o.status].push(o);
       }
       ordersGrouped[OrderStatusEnum.NEW].forEach(o =>
-        switchOrderStatus(
-          o,
-          OrderStatusEnum.PENDING,
-          bar,
-          strategyRecord.state,
-        ),
+        triggerChange(o, OrderStatusEnum.PENDING, bar, strategyRecord.state),
       );
       watchOrders(
         bar,

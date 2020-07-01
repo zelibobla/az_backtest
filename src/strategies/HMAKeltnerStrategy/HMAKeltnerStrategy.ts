@@ -8,6 +8,7 @@ import { elaborateTrade } from './tradeElaborator';
 import { defaults, messages } from './settings';
 import { TradeStatusEnum } from '../../typings/trade.interface';
 import { OrderDirectionEnum } from '../../typings/order.interface';
+import { markTradeCloseBySwing } from '../../services/tradeService';
 
 const HMAKeltnerStrategy = {
   key: 'hmaKeltner',
@@ -51,14 +52,9 @@ const HMAKeltnerStrategy = {
             options.swingTradesDirection &&
             lastTrade.openOrder.direction === OrderDirectionEnum.BUY))
       ) {
-        /**
-         * I use it to switch the direction, and it should stay here
-         * But also the trade.interface must appear here and a trade to be closed in this place
-         */
-        if (Math.abs(state.positions.get(instrument.symbol)) > 0) {
-          trade.openOrder.quantity *= 2;
+        if (lastTrade) {
+          markTradeCloseBySwing(state, lastTrade, trade.openOrder, bar);
         }
-        /* As well as the new trade appear here: */
         state.orders.set(trade.openOrder.hash, trade.openOrder);
         state.trades.push(trade);
       }

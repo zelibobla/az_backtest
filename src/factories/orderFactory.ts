@@ -8,6 +8,30 @@ import {
 import { TradeInterface } from '../typings/trade.interface';
 
 const orderFactory = {
+  clone: (
+    proto: OrderInterface,
+    parentHash?: string,
+    tradeHash?: string,
+  ): OrderInterface => {
+    const order = {
+      symbol: proto.symbol,
+      quantity: proto.quantity,
+      direction: proto.direction,
+      type: proto.type,
+      status: OrderStatusEnum.NEW,
+    } as OrderInterface;
+    if (parentHash) {
+      order.parentHash = parentHash;
+    }
+    order.hash = Md5.hashStr(
+      JSON.stringify(new Date().toString()) + JSON.stringify(order),
+    ) as string;
+    if (tradeHash) {
+      order.tradeHash = tradeHash;
+    }
+    return order;
+  },
+
   create: (
     direction: OrderDirectionEnum,
     type: OrderTypeEnum,
