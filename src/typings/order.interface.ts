@@ -20,8 +20,8 @@ export enum OrderStatusEnum {
 
 export interface OrderInterface {
   tradeHash: string;
-  parentHash: string;
-  children: string[];
+  parentHash?: string;
+  children?: string[];
   hash: string;
   symbol: string;
   quantity: number;

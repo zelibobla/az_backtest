@@ -1,8 +1,8 @@
 import BarInterface from './bar.interface';
-import { StoreInterface } from './store.interface';
 import { OrderInterface } from './order.interface';
+import { StrategyStateInterface } from './strategy.interface';
 
 export interface BrokerInterface {
   execute(order: OrderInterface): Promise<OrderInterface>;
-  watch(store: StoreInterface, bar: BarInterface): Promise<void>;
+  watch(state: StrategyStateInterface, bar: BarInterface): Promise<void>;
 }

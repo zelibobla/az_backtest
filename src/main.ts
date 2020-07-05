@@ -51,8 +51,26 @@ observable.subscribe(
   },
   undefined,
   () => {
+    const summary = [];
     store.getStrategyState(HMAKeltnerStrategy.key).trades.forEach(trade => {
       console.log(trade);
+      const profit =
+        (trade.closeOrder.filledPrice - trade.openOrder.filledPrice) *
+        (trade.openOrder.dir === 'SELL' ? -1 : 1);
+      summary.push({
+        start: trade.openOrder.bar.original_date,
+        dir: trade.openOrder.direction,
+        priceEnter: trade.openOrder.filledPrice,
+        end: trade.closeOrder.bar.original_date,
+        priceExit: trade.closeOrder.filledPrice,
+        profit,
+      });
     });
+    console.log(summary);
+    const total = summary.reduce((memo, s) => {
+      memo += s.profit;
+      return memo;
+    }, 0);
+    console.log(`>>>> ${summary.length} trades, ${total} in total <<<<`);
   },
 );
